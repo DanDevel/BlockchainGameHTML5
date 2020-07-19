@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border:0px solid #d3d3d3;
+    background-color: #f1f1f1;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+
+
+<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+
+</head>
+
+<body onload="startGame()" style="background-image: url('space1.jpg'); color:yellow;">
+<input type="hidden" id="t1" value="">
+<input type="hidden" id="update_myscore" value="0" >
+<input type="hidden" id="updated_myscore" value="0" >
+<script>
+    setInterval(verify_score_for_update, 1000);
+    function verify_score_for_update(){
+        //alert('verifying...score');
+        var verify_score;
+        verify_score = document.getElementById("update_myscore").value;
+        var verified_score;
+        verified_score = document.getElementById("updated_myscore").value;
+        
+        //alert('verifying...score: ' + String(verify_score));
+        if ((parseInt(verify_score) > 0) && (parseInt(verified_score) == 0)){
+            blockchain_updateMyScore(verify_score);
+            // the setInterval function wiil use this value to update the player's score
+            // we use this as a flag: 0 or 1
+            document.getElementById("updated_myscore").value = "1";
+        
+        }
+    }
+</script>
+<script src="enterRoom.js"></script>
+<script>
+    // optional
+    function verify_update_my_score_request(result_request){
+        console.log('verify_update_my_score_request.');
+        console.log(result_request[0]);
+        if (result_request[0] == "1") {
+            
+            document.getElementById("updated_myscore").value = "1";
+            alert('score updated!!!');
+        }
+    }
+
+  function blockchain_updateMyScore(points){
+    //alert('blockchain_updateMyScore ..... >>>>');
+    var web3 = new Web3(Web3.givenProvider || "http://127.0.0.1:8545"); // local blockchain node using GANACHE
+    var contrato1;
+    var abi = JSON.parse('[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"activeusers","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_email","type":"string"},{"name":"_points","type":"uint256"}],"name":"updateMyScoreByAccount","outputs":[{"name":"s","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_name","type":"string"},{"name":"_email","type":"string"}],"name":"login","outputs":[{"name":"n","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_name","type":"string"},{"name":"_email","type":"string"},{"name":"_address","type":"address"}],"name":"signup","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_name","type":"string"},{"name":"_email","type":"string"},{"name":"_points","type":"uint256"}],"name":"updateMyScore","outputs":[{"name":"s","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"people","outputs":[{"name":"name","type":"string"},{"name":"email","type":"string"},{"name":"account_address","type":"address"},{"name":"points","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"author","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_name","type":"string"},{"name":"_email","type":"string"}],"name":"loginAddress","outputs":[{"name":"a","type":"address"},{"name":"s2","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_status","type":"string"}],"name":"startgame","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"player_found","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_status","type":"string"}],"name":"endgame","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"gamestatus","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"users","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"players","outputs":[{"name":"email","type":"string"},{"name":"account_address","type":"address"},{"name":"points","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]');
+    var cryptoAddress = "0x2931670A7b9Bc6bA2C1cdF41d16FF52a3AD031e5"; // the contract address. 
+    var contrato1 = new web3.eth.Contract(abi, cryptoAddress);
+    
+    var user_account_confirmation = prompt('Your user email:', "");
+    if (user_account_confirmation == null || user_account_confirmation == ""){
+        // canceled
+    }else{
+        var n;
+        n = parseInt(points);
+
+        //alert('new score acc: ' + String(user_account_confirmation) + ' new score : ' + String(n));
+
+        contrato1.methods.updateMyScoreByAccount(user_account_confirmation, n).send({'from':"0x0E138ce364Dd4D2679A778EC61ef6763082D9878"}) // the account where the contract were deployed on blockchain, (GANACHE for a local blockchain).
+        .on('receipt', function(receipt){
+            console.log(receipt); // show the result of the the transaction (update my score)
+            document.getElementById("myscore").innerHTML = n ;
+    
+        })
+        //.then(verify_update_my_score_request) // optional. show score updated!!! message on the html page. 
+    }
+  }
+var player2;
+var myObstacles = [];
+var myScore;
+var background_img;
+var player1;
+
+function startGame() {
+    background_img = new component_img(480, 270, "space1.jpg", 0, 0, "image"); // background image
+    player1 = new component_img(30, 30, "astro1.jpg", 0, 0, "image"); // astronaut 1
+    player2 = new component_img(30, 30, "astro2.jpg", 0, 0, "image"); // astronaut 2
+    player2.gravity = 0.05;
+    myScore = new component("25px", "Consolas", "yellow", 280, 40, "text");
+    myGameArea.start();
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 480;
+        this.canvas.height = 270;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+        this.interval = setInterval(updateGameArea, 20);
+        },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+}
+
+// component -  load astronaut image
+function component_img(width, height, color, x, y, type) {
+    this.type = type;
+    if (type == "image") {
+        this.image = new Image();
+        this.image.src = color;
+    }
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;    
+    this.gravity = 0;
+    this.gravitySpeed = 0;
+
+    this.update = function() {
+        ctx = myGameArea.context;
+        if (type == "image") {
+            ctx.drawImage(this.image, 
+                this.x, 
+                this.y,
+                this.width, this.height);
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    }
+    this.newPos = function() {
+        this.x += this.speedX;
+        this.y += this.speedY + this.gravitySpeed;
+        this.gravitySpeed += this.gravity;
+        this.y += this.speedY + this.gravitySpeed;
+        this.hitBottom();
+
+    }
+    this.hitBottom = function() {
+        var rockbottom = myGameArea.canvas.height - this.height;
+        if (this.y > rockbottom) {
+            this.y = rockbottom;
+            this.gravitySpeed = 0;
+        }
+    }
+
+    this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            crash = false;
+        }
+        return crash;
+    }
+}
+
+// create the obstacles
+function component(width, height, color, x, y, type) {
+    this.type = type;
+    this.score = 0;
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;
+    this.gravity = 0;
+    this.gravitySpeed = 0;
+    this.update = function() {
+        ctx = myGameArea.context;
+        if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    }
+    this.newPos = function() {
+        this.gravitySpeed += this.gravity;
+        this.x += this.speedX;
+        this.y += this.speedY + this.gravitySpeed;
+        this.hitBottom();
+    }
+    this.hitBottom = function() {
+        var rockbottom = myGameArea.canvas.height - this.height;
+        if (this.y > rockbottom) {
+            this.y = rockbottom;
+            this.gravitySpeed = 0;
+        }
+    }
+    this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            crash = false;
+        }
+        return crash;
+    }
+}
+
+function updateGameArea() {
+    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+    for (i = 0; i < myObstacles.length; i += 1) {
+        // if astronaut 1 or 2 crashes then pass the score of the game to the DOM element
+        // this happens too fast so i put this on a DOM element to be captured when we want.
+        if (player1.crashWith(myObstacles[i]) || player2.crashWith(myObstacles[i])){
+
+            document.getElementById("update_myscore").value = myGameArea.frameNo ;
+
+            return;
+        } 
+    }
+
+
+
+    myGameArea.clear();
+
+    background_img.newPos();
+    background_img.update();
+
+    player1.newPos();
+    player1.update();
+
+    myGameArea.frameNo += 1;
+    if (myGameArea.frameNo == 1 || everyinterval(150)) {
+        x = myGameArea.canvas.width;
+        minHeight = 20;
+        maxHeight = 200;
+        height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+        minGap = 50;
+        maxGap = 200;
+        gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+        myObstacles.push(new component(10, height, "blue", x, 0));
+        myObstacles.push(new component(10, x - height - gap, "blue", x, height + gap));
+    }
+    for (i = 0; i < myObstacles.length; i += 1) {
+        myObstacles[i].x += -1;
+        myObstacles[i].update();
+    }
+
+    myScore.text="My SCORE: " + myGameArea.frameNo;
+    myScore.update();
+
+    player2.newPos();
+    player2.update();
+}
+
+function everyinterval(n) {
+    if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
+    return false;
+}
+
+function walk(n) {
+    player2.gravity = n;
+    player1.gravity = n;
+}
+</script>
+<br>
+<table>
+    <tr>
+        <td>
+            <br>
+            <button onmousedown="walk(-0.2)" onmouseup="walk(0.05)" style="vertical-align: center; background-color: black; color: white; cursor: pointer;"><img src="astro2.jpg"> walk on space!</button>
+            <p>Use the walk button to stay in the air as long as you can!</p>
+            <br>
+            <button onClick="play_again()">Play again</button>
+        </td>
+        <td>
+            <script>
+                function play_again(){
+                    location.reload();
+                }
+            </script>
+            
+
+        </td>
+    </tr>
+</table>
+
+
+</body>
+</html>

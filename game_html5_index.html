@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/><!--
+
+    
+    <script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script>
+-->
+<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+
+
+<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+
+<script src="enterRoom.js"></script>
+
+<script>
+
+
+function read_response(resp){
+
+    var my_account;
+    my_account = resp[0] ;
+    var my_score;
+    my_score = resp[1] ;   
+    
+    if (my_account != "0x0000000000000000000000000000000000000000"){
+        // alert("Login OK!!!!!");
+        document.getElementById("frame_game").setAttribute("src", "game_html5_2.html");
+        enterRoom(my_account, my_score);
+
+    }else{
+        alert("Login failed!");
+    }
+}
+
+  function blockchain_login(){
+    var web3 = new Web3(Web3.givenProvider || "http://127.0.0.1:8545");
+    var contrato1;
+    var abi = JSON.parse('[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"activeusers","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_email","type":"string"},{"name":"_points","type":"uint256"}],"name":"updateMyScoreByAccount","outputs":[{"name":"s","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_name","type":"string"},{"name":"_email","type":"string"}],"name":"login","outputs":[{"name":"n","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_name","type":"string"},{"name":"_email","type":"string"},{"name":"_address","type":"address"}],"name":"signup","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_name","type":"string"},{"name":"_email","type":"string"},{"name":"_points","type":"uint256"}],"name":"updateMyScore","outputs":[{"name":"s","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"people","outputs":[{"name":"name","type":"string"},{"name":"email","type":"string"},{"name":"account_address","type":"address"},{"name":"points","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"author","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_name","type":"string"},{"name":"_email","type":"string"}],"name":"loginAddress","outputs":[{"name":"a","type":"address"},{"name":"s2","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_status","type":"string"}],"name":"startgame","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"player_found","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_status","type":"string"}],"name":"endgame","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"gamestatus","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"users","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"players","outputs":[{"name":"email","type":"string"},{"name":"account_address","type":"address"},{"name":"points","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]');
+    var cryptoAddress = "0x2931670A7b9Bc6bA2C1cdF41d16FF52a3AD031e5";
+    var contrato1 = new web3.eth.Contract(abi, cryptoAddress);
+    var username;
+    username = document.getElementById("username").value;
+    var useremail;
+    useremail = document.getElementById("useremail").value;
+    var LoginResponse;
+
+
+    contrato1.methods.loginAddress(username, useremail).call()
+    .then(read_response)
+
+
+  }
+</script>
+</head>
+
+<body style="background-image: url('space1.jpg');"><center>
+
+    <table id="tab_logo">
+        <tr>
+            <td>
+                <img src="astro_logo.jpg">
+            </td>
+            <td>
+            </td>
+        </tr>
+    </table>
+
+    <table id="tab_signin" style="color:yellow;">
+        <tr>
+            <td>
+            </td>
+            <td>
+            Name: <br>
+            <input type="text" id="username" name="username" value="">
+            <br><br>
+            E-mail: <br>
+            <input type="text" id="useremail" name="useremail" value="">
+            <br><br>
+            <button onclick="blockchain_login()">Login</button>
+            <br>
+            <script src="signup.js"></script>
+            <br><br>
+            <span onclick="SignUp()" style="color:yellow; cursor: pointer;">Click here to SIGNUP</span>
+            </td>
+        </tr>
+    </table>
+
+    <table id="tab_game">
+        <tr>
+            <td style="color:yellow;">
+                <iframe src="" style="width: 520px; height: 490px; border:none;" id="frame_game" ></iframe>
+                <br>my blockchain account:
+                <p id="myaccount" style="color:yellow;"></p>
+                my score:
+                <p id="myscore" style="color:yellow;"></p>         
+                <p id="myhitscore" style="color:yellow;"></p>        
+            </td>
+            <td style="vertical-align: top;">
+                <font style="font-size:25px; color:aqua;">Score:</font>
+                <br><br>
+    
+                <div id="players_score" style="color: cyan;"></div>
+                <div id="players_hitscore" style="color: cyan;"></div>
+            </td>
+        </tr>
+    </table>
+    <script>
+        document.getElementById("tab_game").style.display = "none" ;
+    </script>
+
+    <div id="signup_view" style="color:yellow;">
+        <table>
+          <tr>
+            <td>SignUp here:
+                <br><br>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>
+            Name: <br>
+            <input type="text" id="username_signup" name="username_signup" value="">
+            <br>
+            Email: <br>
+            <input type="text" id="useremail_signup" name="useremail_signup" value="">
+            <br>
+            Blockchain address: <br>
+            <input type="text" id="useraddress_signup" name="useraddress_signup" value="">
+            <br>
+            <button onclick="blockchain_signup()">SignUp</button>
+            <br>
+            <script>
+                function back_to_login(){
+                    // show signup form
+                    document.getElementById("signup_view").style.display = "none";
+                    // hide login form
+                    document.getElementById("tab_signin").style.display = "";
+                }
+            </script>
+            
+            <br><br>
+
+            <div style="font-size: 13px; color:yellow; cursor: pointer;" onClick="back_to_login()"><<<< Back to login page</div>
+            </td>
+            <td>
+    
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </table>
+    </div>
+    <script>
+        document.getElementById("signup_view").style.display = "none" ;
+    </script>
+</body>
+</html>
